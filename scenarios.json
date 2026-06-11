@@ -1,40 +1,46 @@
 {
+  "product": "AquaPure Home Water Bar",
+  "rep": "Noa",
+  "manager": "Dana (shift manager)",
   "scenarios": [
     {
-      "id": "billing-double-charge",
-      "customerLine": "Hi, I just checked my credit card statement and I was charged twice for my last capsule order. I only placed one order!",
-      "repResponse": "I'm sorry about that, let me check your account right away... I can see the duplicate charge from the 4th. I'm issuing a refund for the second charge now — you'll see it back on your card within 3 to 5 business days, and I'm sending you a confirmation email.",
+      "id": 1,
+      "customerLine": "The display says 'Replace UV lamp' — what do I do?",
+      "repResponse": "I'll order you a replacement lamp and send a 2-minute install guide. Done.",
       "agentAction": "silent",
-      "intent": "Routine billing correction. The rep has full authority to refund duplicate charges and resolved it in one exchange — no escalation signal present."
+      "intent": "Rep resolved it directly. Known issue, clear fix. No reason to interrupt."
     },
     {
-      "id": "machine-descaling-help",
-      "customerLine": "My machine's orange light keeps blinking and the coffee is coming out lukewarm. Is it broken?",
-      "repResponse": "Good news — that blinking light usually means the machine needs descaling, which also explains the temperature. I'll walk you through it now, it takes about 15 minutes, and I'm texting you a link to the step-by-step video as well.",
+      "id": 2,
+      "customerLine": "Water tastes a bit off lately.",
+      "repResponse": "Sounds like the filter cycle. I'm scheduling a filter swap and crediting this month.",
       "agentAction": "silent",
-      "intent": "Standard technical troubleshooting with a known fix. Customer is curious, not frustrated; the rep is guiding them to resolution."
+      "intent": "Standard resolution path. Rep is in control. Stay out of the way."
     },
     {
-      "id": "delivery-delay",
-      "customerLine": "My order was supposed to arrive Tuesday and it's Friday now. Where is it?",
-      "repResponse": "Let me track that for you... I see it was held up at the courier's regional hub. I've flagged it for priority delivery — it should reach you by tomorrow — and I've added a sleeve of capsules to your next order on us for the inconvenience.",
+      "id": 3,
+      "customerLine": "I was overcharged last month, I want it fixed now.",
+      "repResponse": "I see the double charge — refunding it now, you'll see it in 3 days.",
       "agentAction": "silent",
-      "intent": "Mild frustration over a late delivery, but the rep located the package, gave a concrete new ETA, and offered a goodwill gesture. Single complaint, de-escalating tone — within rep's scope."
+      "intent": "Billing fix within rep's authority. Confident, resolved. Silence is the right call."
     },
     {
-      "id": "subscription-cancellation",
-      "customerLine": "I want to cancel my monthly subscription. I have too many capsules piling up at home.",
-      "repResponse": "I can take care of that for you. Before I do — if the issue is quantity, I can pause your deliveries for two months or switch you to a smaller box instead. Would either of those work better, or shall I go ahead and cancel?",
+      "id": 4,
+      "customerLine": "Can I add a second unit for my office on the same account?",
+      "repResponse": "Absolutely — adding it now to your business profile.",
       "agentAction": "silent",
-      "intent": "Retention conversation, not a conflict. The customer has a practical reason, the rep is offering standard alternatives, and no manager request or repeated frustration has occurred."
+      "intent": "Upsell handled cleanly. This is a win, not a friction point."
     },
     {
-      "id": "manager-demand-escalation",
-      "customerLine": "This is the third time I'm calling about the same broken machine and nobody helps me. I want to speak to a manager. Did you hear me? I said I want a manager, NOW.",
-      "repResponse": "I completely understand, and I'm sorry it's taken three calls. I'm bringing my manager into the call right now — please stay on the line with me for just a moment.",
+      "id": 5,
+      "customerLine": "I don't want to talk to you. Put your manager on. Now.",
+      "repResponse": "I understand — I'd really like to help you myself first...",
+      "customerEscalation": "No. Manager. I'm not repeating myself again.",
       "agentAction": "trigger",
-      "intent": "Hard escalation rule: the customer explicitly demanded a manager twice in the same exchange, on a repeat issue (third call). The agent must initiate a warm transfer and brief the manager before connecting.",
-      "managerBrief": "Hi, quick brief before you join: the customer is Dana Cohen, calling for the third time about a milk frother that stopped working two weeks after purchase. Previous calls promised a replacement that never shipped. She has explicitly asked for a manager twice and is highly frustrated. Recommended opening: acknowledge the failed replacement, confirm a new unit ships today with express delivery, and offer a goodwill credit. She is a 4-year subscriber with high lifetime value."
+      "trigger": "Two consecutive manager demands + rep refusal loop detected.",
+      "screenNote": "Customer demanding manager. You're not stuck — I've got you. Don't decide. Read this if needed: 'I hear you. I'm bringing in my manager Dana, who already has the full picture.'",
+      "managerBrief": "Hi Dana, Warm Transfer here. Noa has a customer on the line who's asked for a manager twice — billing dispute from last month, already partially handled, customer is frustrated and doesn't want to repeat himself. You have the full context. Ready to take over warmly whenever you are.",
+      "intent": "Two refusals = real escalation. Rep is at the freeze point. Act now: brief the manager, hand Noa the words, bridge only if the wall holds."
     }
   ]
 }
