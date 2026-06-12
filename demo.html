@@ -225,7 +225,10 @@ async function notifyRep(decision) {
     await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: scenario.whatsappNote }),
+      body: JSON.stringify({
+        message: scenario.whatsappNote,
+        messageHe: scenario.whatsappNoteHe,
+      }),
     });
   } catch (e) { /* demo continues even if the send fails */ }
 }
@@ -260,15 +263,20 @@ async function briefManager() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         brief: scenario.managerBrief,
+        briefHe: scenario.managerBriefHe,
         caseSummary: scenario.managerWhatsapp,
+        caseSummaryHe: scenario.managerWhatsappHe,
       }),
     });
     const out = await res.json();
     if (out.ok) {
       status.className = "call-status ok";
-      status.textContent = out.result && out.result.simulated
-        ? "✓ Simulated (no API key configured) — brief + case file ready."
-        : "✓ Danya's phone is ringing. Case file sent by SMS.";
+      if (out.result && out.result.simulated) {
+        status.textContent = "✓ Simulated (no API key configured) — brief + case file ready.";
+      } else {
+        status.textContent = "✓ Danya's phone is ringing. Case file sent by SMS.";
+        if (out.result && out.result.id) pollCallStatus(out.result.id, status);
+      }
     } else {
       throw new Error(out.error || "transfer failed");
     }
@@ -276,6 +284,27 @@ async function briefManager() {
     status.className = "call-status err";
     status.textContent = "✗ Call failed: " + e.message;
     document.getElementById("briefBtn").disabled = false;
+  }
+}
+
+async function pollCallStatus(id, status) {
+  const FINAL = ["completed", "failed", "cancelled", "canceled"];
+  for (let i = 0; i < 60; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    try {
+      const call = await (await fetch("/api/call-status?id=" + encodeURIComponent(id))).json();
+      if (!call.status) continue;
+      if (FINAL.includes(call.status)) {
+        const secs = call.duration ? " (" + call.duration + "s)" : "";
+        status.className = "call-status " + (call.status === "completed" ? "ok" : "err");
+        status.textContent = call.status === "completed"
+          ? "✓ Briefing call completed" + secs + ". Danya has the full picture."
+          : "✗ Briefing call " + call.status + ". Try again or call manually.";
+        return;
+      }
+      status.className = "call-status busy";
+      status.textContent = "📞 Briefing call: " + call.status + "…";
+    } catch (e) { /* keep polling */ }
   }
 }
 

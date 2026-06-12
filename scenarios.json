@@ -39,9 +39,12 @@
       "agentAction": "trigger",
       "trigger": "Two consecutive manager demands + rep refusal loop detected.",
       "whatsappNote": "Noa — you're doing fine. Don't argue the point, just acknowledge and slow down. If he asks for a manager again, I'll bring Danya in. You don't need to handle this alone.",
+      "whatsappNoteHe": "נואה — את בסדר גמור. אל תתווכחי על הנקודה, רק תכירי בתסכול והאטי את הקצב. אם הוא יבקש מנהל שוב — אני מכניס את דניה. את לא לבד בזה.",
       "screenNote": "Customer demanding manager. You're not stuck — I've got you. Don't decide. Read this if needed: 'I hear you. I'm bringing in my manager Danya, who already has the full picture.'",
       "managerBrief": "Hi Danya, Warm Transfer here. Noa has a customer on the line who's asked for a manager twice — billing dispute from last month, already partially handled, customer is frustrated and doesn't want to repeat himself. You have the full context. Ready to take over warmly whenever you are.",
+      "managerBriefHe": "היי דניה, כאן Warm Transfer. לנואה יש לקוח על הקו שביקש מנהל פעמיים — מחלוקת חיוב מהחודש שעבר, שטופלה חלקית, הלקוח מתוסכל ולא מוכן לחזור על עצמו. יש לך את כל ההקשר. מוכנה להיכנס לשיחה ברוגע כשתהיי מוכנה.",
       "managerWhatsapp": "📋 Case file — live call with Noa: Billing dispute from last month (double charge, refund already issued, lands in 3 days). Customer demanded a manager twice, refuses to repeat himself. Recommended opening: acknowledge the wait, confirm the refund timeline, offer a goodwill credit. If the call is transferred to you, continue from this point — no need to ask him anything again.",
+      "managerWhatsappHe": "📋 תיק מקרה — שיחה חיה עם נואה: מחלוקת חיוב מהחודש שעבר (חיוב כפול, זיכוי כבר בוצע, ייכנס תוך 3 ימים). הלקוח דרש מנהל פעמיים ולא מוכן לחזור על עצמו. פתיחה מומלצת: הכירי בהמתנה, אשרי את מועד הזיכוי, הציעי זיכוי של רצון טוב. אם השיחה תועבר אלייך — המשיכי מהנקודה הזאת, אין צורך לשאול אותו שוב דבר.",
       "intent": "Two refusals = real escalation. Rep is at the freeze point. Act now: brief the manager, hand Noa the words, bridge only if the wall holds."
     }
   ]

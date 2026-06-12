@@ -1,25 +1,26 @@
-const { callDial } = require("../lib/engine");
-const { sendWhatsApp } = require("../lib/whatsapp");
+const { callDial, pickLang } = require("../lib/engine");
+const { sendMessage } = require("../lib/whatsapp");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).json({ error: "POST only" });
     return;
   }
-  const brief = req.body && req.body.brief;
+  const body = req.body || {};
+  const brief = pickLang(body.brief, body.briefHe);
   if (!brief) {
     res.status(400).json({ error: "Missing 'brief' in request body" });
     return;
   }
-  const to = (req.body && req.body.to) || process.env.MANAGER_PHONE;
+  const to = body.to || process.env.MANAGER_PHONE;
   const out = { ok: true };
 
-  // Case file on WhatsApp first, so it's on the manager's screen
+  // Case file by SMS first, so it's on the manager's screen
   // before (and during) the briefing call. Non-fatal if it fails.
-  const caseSummary = req.body && req.body.caseSummary;
+  const caseSummary = pickLang(body.caseSummary, body.caseSummaryHe);
   if (caseSummary) {
     try {
-      out.whatsapp = await sendWhatsApp({ to, message: caseSummary });
+      out.whatsapp = await sendMessage({ to, message: caseSummary });
     } catch (err) {
       out.whatsapp = { error: String(err.message || err) };
     }

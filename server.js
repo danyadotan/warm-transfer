@@ -5,8 +5,8 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { decide, callDial } = require("./lib/engine");
-const { sendWhatsApp } = require("./lib/whatsapp");
+const { decide, callDial, getCallStatus, pickLang } = require("./lib/engine");
+const { sendMessage } = require("./lib/whatsapp");
 
 // Minimal .env loader (no dependencies).
 const envPath = path.join(__dirname, ".env");
@@ -63,13 +63,14 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === "POST" && req.url === "/api/notify") {
     const body = await readBody(req);
-    if (!body.message) {
+    const message = pickLang(body.message, body.messageHe);
+    if (!message) {
       return sendJson(res, 400, { error: "Missing 'message' in request body" });
     }
     try {
-      const result = await sendWhatsApp({
+      const result = await sendMessage({
         to: body.to || process.env.REP_PHONE,
-        message: body.message,
+        message,
       });
       return sendJson(res, 200, { ok: true, result });
     } catch (err) {
@@ -78,23 +79,36 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === "POST" && req.url === "/api/transfer") {
     const body = await readBody(req);
-    if (!body.brief) {
+    const brief = pickLang(body.brief, body.briefHe);
+    if (!brief) {
       return sendJson(res, 400, { error: "Missing 'brief' in request body" });
     }
     const to = body.to || process.env.MANAGER_PHONE;
     const out = { ok: true };
-    if (body.caseSummary) {
+    const caseSummary = pickLang(body.caseSummary, body.caseSummaryHe);
+    if (caseSummary) {
       try {
-        out.whatsapp = await sendWhatsApp({ to, message: body.caseSummary });
+        out.whatsapp = await sendMessage({ to, message: caseSummary });
       } catch (err) {
         out.whatsapp = { error: String(err.message || err) };
       }
     }
     try {
-      out.result = await callDial({ to, prompt: body.brief });
+      out.result = await callDial({ to, prompt: brief });
       return sendJson(res, 200, out);
     } catch (err) {
       return sendJson(res, 502, { ok: false, error: String(err.message || err) });
+    }
+  }
+  if (req.method === "GET" && req.url.startsWith("/api/call-status")) {
+    const id = new URL(req.url, "http://localhost").searchParams.get("id");
+    if (!id) {
+      return sendJson(res, 400, { error: "Missing 'id' query parameter" });
+    }
+    try {
+      return sendJson(res, 200, await getCallStatus(id));
+    } catch (err) {
+      return sendJson(res, 502, { error: String(err.message || err) });
     }
   }
   res.writeHead(404);
