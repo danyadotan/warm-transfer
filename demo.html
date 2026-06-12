@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaPure Support — Warm Transfer Demo</title>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #1a2233; --panel2: #232e45; --text: #e8edf6;
+    --muted: #8da0bf; --accent: #3aa0ff; --green: #2ecc8f; --red: #ff5d6c;
+    --amber: #ffc24b; --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    min-height: 100vh; padding: 24px;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  .rep-badge {
+    background: var(--panel); padding: 8px 16px; border-radius: 99px;
+    font-size: 14px; color: var(--muted);
+  }
+  .rep-badge b { color: var(--text); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tabs button {
+    background: var(--panel); color: var(--muted); border: 1px solid transparent;
+    padding: 10px 18px; border-radius: 99px; cursor: pointer; font-size: 14px;
+  }
+  .tabs button.active { background: var(--accent); color: #fff; }
+  .tabs button.escalation.active { background: var(--red); }
+  .layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel); border-radius: var(--radius); padding: 20px;
+  }
+  .panel h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 14px;
+  }
+  .transcript { min-height: 280px; display: flex; flex-direction: column; gap: 12px; }
+  .bubble {
+    max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 15px;
+    line-height: 1.45; animation: pop .25s ease;
+  }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
+  .bubble.customer { background: var(--panel2); align-self: flex-start; }
+  .bubble.rep { background: #1f3a5f; align-self: flex-end; }
+  .bubble .who { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .controls { margin-top: 18px; display: flex; gap: 10px; }
+  .btn {
+    border: 0; border-radius: 10px; padding: 12px 20px; font-size: 15px;
+    cursor: pointer; font-weight: 600;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .agent-state {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    border-radius: 10px; background: var(--panel2); margin-bottom: 14px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
+  .dot.triggered { background: var(--red); animation: pulse 1s infinite; }
+  .dot.notify { background: var(--amber); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .agent-state .label { font-weight: 600; }
+  .agent-state .sub { font-size: 13px; color: var(--muted); }
+  .intent { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .screen-note {
+    display: none; background: #3a2530; border: 1px solid var(--red);
+    border-radius: 10px; padding: 16px; margin-top: 14px; line-height: 1.55;
+    font-size: 15px;
+  }
+  .screen-note.show { display: block; animation: pop .3s ease; }
+  .screen-note .tag { color: var(--red); font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+  .brief-box {
+    display: none; margin-top: 14px; background: var(--panel2);
+    border-radius: 10px; padding: 16px; font-size: 14px; color: var(--muted);
+    line-height: 1.55;
+  }
+  .brief-box.show { display: block; }
+  .brief-box b { color: var(--text); }
+  .call-status { margin-top: 12px; font-size: 14px; min-height: 20px; }
+  .call-status.ok { color: var(--green); }
+  .call-status.err { color: var(--red); }
+  .call-status.busy { color: var(--amber); }
+</style>
+</head>
+<body>
+<header>
+  <h1>💧 AquaPure Support · <span>Warm Transfer</span></h1>
+  <div class="rep-badge">Rep: <b id="repName">Noa</b> · Manager on shift: <b id="mgrName">Dana</b></div>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="layout">
+  <div class="panel">
+    <h2>Live call transcript</h2>
+    <div class="transcript" id="transcript"></div>
+    <div class="controls">
+      <button class="btn btn-primary" id="nextBtn">▶ Next line</button>
+      <button class="btn btn-danger" id="briefBtn" style="display:none">📞 Brief Dana now</button>
+    </div>
+    <div class="call-status" id="callStatus"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Warm Transfer agent</h2>
+    <div class="agent-state">
+      <div class="dot" id="agentDot"></div>
+      <div>
+        <div class="label" id="agentLabel">Silent</div>
+        <div class="sub" id="agentSub">Listening. Rep is in control.</div>
+      </div>
+    </div>
+    <div class="intent" id="agentIntent"></div>
+    <div class="screen-note" id="screenNote"></div>
+    <div class="brief-box" id="waBox"></div>
+    <div class="brief-box" id="briefBox"></div>
+  </div>
+</div>
+
+<script>
+let DATA, scenario, steps, stepIndex, customerLines;
+
+async function init() {
+  DATA = await (await fetch("scenarios.json")).json();
+  document.getElementById("repName").textContent = DATA.rep;
+  document.getElementById("mgrName").textContent = DATA.manager.split(" ")[0];
+  const tabs = document.getElementById("tabs");
+  DATA.scenarios.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.textContent = (s.agentAction === "trigger" ? "🚨 " : "") + "Scenario " + s.id;
+    if (s.agentAction === "trigger") b.classList.add("escalation");
+    b.onclick = () => selectScenario(i);
+    tabs.appendChild(b);
+  });
+  selectScenario(0);
+}
+
+function buildSteps(s) {
+  const out = [{ who: "customer", text: s.customerLine }, { who: "rep", text: s.repResponse }];
+  if (s.customerEscalation) out.push({ who: "customer", text: s.customerEscalation });
+  return out;
+}
+
+function selectScenario(i) {
+  scenario = DATA.scenarios[i];
+  steps = buildSteps(scenario);
+  stepIndex = 0;
+  customerLines = [];
+  document.querySelectorAll("#tabs button").forEach((b, j) => b.classList.toggle("active", j === i));
+  document.getElementById("transcript").innerHTML = "";
+  document.getElementById("agentIntent").textContent = "";
+  document.getElementById("screenNote").classList.remove("show");
+  document.getElementById("waBox").classList.remove("show");
+  document.getElementById("briefBox").classList.remove("show");
+  document.getElementById("briefBtn").style.display = "none";
+  document.getElementById("nextBtn").disabled = false;
+  document.getElementById("callStatus").textContent = "";
+  document.getElementById("callStatus").className = "call-status";
+  setAgent("silent", "Listening. Rep is in control.");
+}
+
+function setAgent(state, sub) {
+  const dot = document.getElementById("agentDot");
+  dot.classList.toggle("triggered", state === "trigger");
+  dot.classList.toggle("notify", state === "notify");
+  const labels = { trigger: "TRIGGERED", notify: "WHISPER SENT", silent: "Silent" };
+  document.getElementById("agentLabel").textContent = labels[state] || "Silent";
+  document.getElementById("agentSub").textContent = sub;
+}
+
+function addBubble(who, text) {
+  const div = document.createElement("div");
+  div.className = "bubble " + who;
+  div.innerHTML = '<div class="who">' + (who === "customer" ? "Customer" : DATA.rep) + "</div>" + text;
+  document.getElementById("transcript").appendChild(div);
+}
+
+async function nextLine() {
+  if (stepIndex >= steps.length) return;
+  const step = steps[stepIndex++];
+  addBubble(step.who, step.text);
+  if (step.who === "customer") customerLines.push(step.text);
+
+  // Ask the server-side decision engine after every customer line.
+  let decision = { action: "silent" };
+  if (step.who === "customer") {
+    try {
+      decision = await (await fetch("/api/decide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerLines }),
+      })).json();
+    } catch (e) { /* offline fallback: stay silent */ }
+  }
+
+  if (decision.action === "trigger" && scenario.agentAction === "trigger") {
+    triggerEscalation();
+  } else if (decision.action === "notify" && scenario.whatsappNote) {
+    notifyRep(decision);
+  } else if (stepIndex >= steps.length) {
+    document.getElementById("nextBtn").disabled = true;
+    setAgent("silent", "Call resolved by " + DATA.rep + ".");
+    document.getElementById("agentIntent").textContent = "Why silent: " + scenario.intent;
+  }
+}
+
+async function notifyRep(decision) {
+  setAgent("notify", decision.reason);
+  const box = document.getElementById("waBox");
+  box.innerHTML = "<b>📱 WhatsApp to " + DATA.rep + " (sent now):</b><br>" + scenario.whatsappNote;
+  box.classList.add("show");
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: scenario.whatsappNote }),
+    });
+  } catch (e) { /* demo continues even if the send fails */ }
+}
+
+function triggerEscalation() {
+  document.getElementById("nextBtn").disabled = true;
+  setAgent("trigger", scenario.trigger);
+  document.getElementById("agentIntent").textContent = "Why now: " + scenario.intent;
+  const note = document.getElementById("screenNote");
+  note.innerHTML = '<span class="tag">On-screen note to ' + DATA.rep + "</span>" + scenario.screenNote;
+  note.classList.add("show");
+  const box = document.getElementById("briefBox");
+  box.innerHTML = "<b>Manager brief (spoken on the background call):</b><br>" + scenario.managerBrief;
+  box.classList.add("show");
+  document.getElementById("briefBtn").style.display = "inline-block";
+}
+
+async function briefManager() {
+  const status = document.getElementById("callStatus");
+  status.className = "call-status busy";
+  status.textContent = "Placing background call to " + DATA.manager.split(" ")[0] + "…";
+  document.getElementById("briefBtn").disabled = true;
+  try {
+    const res = await fetch("/api/transfer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ brief: scenario.managerBrief }),
+    });
+    const out = await res.json();
+    if (out.ok) {
+      status.className = "call-status ok";
+      status.textContent = out.result && out.result.simulated
+        ? "✓ Simulated (no API key configured) — brief ready."
+        : "✓ Dana's phone is ringing. Brief in progress.";
+    } else {
+      throw new Error(out.error || "transfer failed");
+    }
+  } catch (e) {
+    status.className = "call-status err";
+    status.textContent = "✗ Call failed: " + e.message;
+    document.getElementById("briefBtn").disabled = false;
+  }
+}
+
+document.getElementById("nextBtn").onclick = nextLine;
+document.getElementById("briefBtn").onclick = briefManager;
+init();
+</script>
+</body>
+</html>

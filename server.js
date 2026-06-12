@@ -1,79 +1,100 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-const winston = require('winston');
-const app = express();
+// Local dev server for the Warm Transfer demo.
+// On Vercel the api/ functions and static files are served automatically;
+// this file exists so `node server.js` runs the exact same app locally.
 
-// Middleware
-app.use(bodyParser.json());
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const { decide, callDial } = require("./lib/engine");
+const { sendWhatsApp } = require("./lib/whatsapp");
 
-// Environment Variables
-const PORT = process.env.PORT || 3000;
-const DIAL_API_KEY = process.env.DIAL_API_KEY;
-const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'https://api.dial.com/whatsapp';
-
-if (!DIAL_API_KEY) {
-  console.error("Missing DIAL_API_KEY in environment variables.");
-  process.exit(1);
+// Minimal .env loader (no dependencies).
+const envPath = path.join(__dirname, ".env");
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const m = line.match(/^\s*([\w.]+)\s*=\s*(.*)\s*$/);
+    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
+  }
 }
 
-// Logger Configuration
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/server.log' })
-  ]
-});
+const PORT = process.env.PORT || 3000;
 
-// Decision Engine (Enhanced with Media Handling)
-const decisionEngine = (incoming) => {
-  const { message, media } = incoming;
-
-  if (message && message.toLowerCase().includes('help')) {
-    return 'Our support team will reach out to you shortly.';
-  } else if (message && message.toLowerCase().includes('status')) {
-    return 'Your request is being processed. Please hold on.';
-  } else if (media) {
-    return 'Thank you for sending the file! We will review it shortly.';
-  } else {
-    return "I'm sorry, I didn't understand that. Can you provide more details?";
-  }
-};
-
-// Handlers
-app.post('/webhook', (req, res) => {
-  const { sender, message, media } = req.body;
-
-  if (!sender || (!message && !media)) {
-    logger.error("Invalid payload: 'sender' and at least one of 'message' or 'media' are required.");
-    return res.status(400).send("Invalid payload: 'sender' and at least one of 'message' or 'media' are required.");
-  }
-
-  logger.info(`Received message from ${sender}: ${message || 'Media file received'}`);
-
-  const responseMessage = decisionEngine({ message, media });
-
-  // Send Outgoing Message
-  axios.post(WHATSAPP_API_URL, {
-    to: sender,
-    message: responseMessage,
-  }, {
-    headers: {
-      Authorization: `Bearer ${DIAL_API_KEY}`,
-    }}).then(() => {
-    logger.info(`Response sent to ${sender}: ${responseMessage}`);
-    res.status(200).send("Webhook processed successfully.");
-  }).catch((error) => {
-    logger.error(`Failed to send response to ${sender}: ${error.message}`);
-    res.status(500).send("Failed to process webhook.");
+function readBody(req) {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", (c) => (data += c));
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data || "{}"));
+      } catch {
+        resolve({});
+      }
+    });
   });
+}
+
+function sendJson(res, status, obj) {
+  res.writeHead(status, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(obj));
+}
+
+function sendFile(res, file, type) {
+  fs.readFile(path.join(__dirname, file), (err, data) => {
+    if (err) {
+      res.writeHead(404);
+      res.end("Not found");
+      return;
+    }
+    res.writeHead(200, { "Content-Type": type });
+    res.end(data);
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  if (req.method === "GET" && (req.url === "/" || req.url === "/demo.html")) {
+    return sendFile(res, "demo.html", "text/html; charset=utf-8");
+  }
+  if (req.method === "GET" && req.url === "/scenarios.json") {
+    return sendFile(res, "scenarios.json", "application/json");
+  }
+  if (req.method === "POST" && req.url === "/api/decide") {
+    const body = await readBody(req);
+    return sendJson(res, 200, decide(body.customerLines || []));
+  }
+  if (req.method === "POST" && req.url === "/api/notify") {
+    const body = await readBody(req);
+    if (!body.message) {
+      return sendJson(res, 400, { error: "Missing 'message' in request body" });
+    }
+    try {
+      const result = await sendWhatsApp({
+        to: body.to || process.env.REP_PHONE,
+        message: body.message,
+      });
+      return sendJson(res, 200, { ok: true, result });
+    } catch (err) {
+      return sendJson(res, 502, { ok: false, error: String(err.message || err) });
+    }
+  }
+  if (req.method === "POST" && req.url === "/api/transfer") {
+    const body = await readBody(req);
+    if (!body.brief) {
+      return sendJson(res, 400, { error: "Missing 'brief' in request body" });
+    }
+    try {
+      const result = await callDial({
+        to: body.to || process.env.MANAGER_PHONE,
+        prompt: body.brief,
+      });
+      return sendJson(res, 200, { ok: true, result });
+    } catch (err) {
+      return sendJson(res, 502, { ok: false, error: String(err.message || err) });
+    }
+  }
+  res.writeHead(404);
+  res.end("Not found");
 });
 
-// Start Server
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
-  logger.info('Webhook endpoint: POST /webhook');
+server.listen(PORT, () => {
+  console.log(`Warm Transfer demo running at http://localhost:${PORT}`);
 });

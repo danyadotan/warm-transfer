@@ -1,0 +1,47 @@
+{
+  "product": "AquaPure Home Water Bar",
+  "rep": "Noa",
+  "manager": "Dana (shift manager)",
+  "scenarios": [
+    {
+      "id": 1,
+      "customerLine": "The display says 'Replace UV lamp' — what do I do?",
+      "repResponse": "I'll order you a replacement lamp and send a 2-minute install guide. Done.",
+      "agentAction": "silent",
+      "intent": "Rep resolved it directly. Known issue, clear fix. No reason to interrupt."
+    },
+    {
+      "id": 2,
+      "customerLine": "Water tastes a bit off lately.",
+      "repResponse": "Sounds like the filter cycle. I'm scheduling a filter swap and crediting this month.",
+      "agentAction": "silent",
+      "intent": "Standard resolution path. Rep is in control. Stay out of the way."
+    },
+    {
+      "id": 3,
+      "customerLine": "I was overcharged last month, I want it fixed now.",
+      "repResponse": "I see the double charge — refunding it now, you'll see it in 3 days.",
+      "agentAction": "silent",
+      "intent": "Billing fix within rep's authority. Confident, resolved. Silence is the right call."
+    },
+    {
+      "id": 4,
+      "customerLine": "Can I add a second unit for my office on the same account?",
+      "repResponse": "Absolutely — adding it now to your business profile.",
+      "agentAction": "silent",
+      "intent": "Upsell handled cleanly. This is a win, not a friction point."
+    },
+    {
+      "id": 5,
+      "customerLine": "I don't want to talk to you. Put your manager on. Now.",
+      "repResponse": "I understand — I'd really like to help you myself first...",
+      "customerEscalation": "No. Manager. I'm not repeating myself again.",
+      "agentAction": "trigger",
+      "trigger": "Two consecutive manager demands + rep refusal loop detected.",
+      "whatsappNote": "Noa — you're doing fine. Don't argue the point, just acknowledge and slow down. If he asks for a manager again, I'll bring Dana in. You don't need to handle this alone.",
+      "screenNote": "Customer demanding manager. You're not stuck — I've got you. Don't decide. Read this if needed: 'I hear you. I'm bringing in my manager Dana, who already has the full picture.'",
+      "managerBrief": "Hi Dana, Warm Transfer here. Noa has a customer on the line who's asked for a manager twice — billing dispute from last month, already partially handled, customer is frustrated and doesn't want to repeat himself. You have the full context. Ready to take over warmly whenever you are.",
+      "intent": "Two refusals = real escalation. Rep is at the freeze point. Act now: brief the manager, hand Noa the words, bridge only if the wall holds."
+    }
+  ]
+}
