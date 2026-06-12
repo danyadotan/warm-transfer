@@ -219,7 +219,7 @@ async function nextLine() {
 async function notifyRep(decision) {
   setAgent("notify", decision.reason);
   const box = document.getElementById("waBox");
-  box.innerHTML = "<b>📱 WhatsApp to " + DATA.rep + " (sent now):</b><br>" + scenario.whatsappNote;
+  box.innerHTML = "<b>📱 Message to " + DATA.rep + "'s phone (sent now):</b><br>" + scenario.whatsappNote;
   box.classList.add("show");
   try {
     await fetch("/api/notify", {
@@ -242,8 +242,8 @@ function triggerEscalation() {
   box.classList.add("show");
   if (scenario.managerWhatsapp) {
     const mgrBox = document.getElementById("mgrWaBox");
-    mgrBox.innerHTML = "<b>📱 WhatsApp case file to " + DATA.manager.split(" ")[0] +
-      " (sent with the call):</b><br>" + scenario.managerWhatsapp;
+    mgrBox.innerHTML = "<b>📱 Case file to " + DATA.manager.split(" ")[0] +
+      "'s phone (sent with the call):</b><br>" + scenario.managerWhatsapp;
     mgrBox.classList.add("show");
   }
   document.getElementById("briefBtn").style.display = "inline-block";
@@ -268,7 +268,7 @@ async function briefManager() {
       status.className = "call-status ok";
       status.textContent = out.result && out.result.simulated
         ? "✓ Simulated (no API key configured) — brief + case file ready."
-        : "✓ Dana's phone is ringing. Case file sent on WhatsApp.";
+        : "✓ Danya's phone is ringing. Case file sent by SMS.";
     } else {
       throw new Error(out.error || "transfer failed");
     }
