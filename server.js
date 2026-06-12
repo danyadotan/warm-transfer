@@ -28,12 +28,16 @@ const logger = winston.createLogger({
   ]
 });
 
-// Decision Engine (Placeholder)
-const decisionEngine = (message) => {
-  if (message.toLowerCase().includes('help')) {
+// Decision Engine (Enhanced with Media Handling)
+const decisionEngine = (incoming) => {
+  const { message, media } = incoming;
+
+  if (message && message.toLowerCase().includes('help')) {
     return 'Our support team will reach out to you shortly.';
-  } else if (message.toLowerCase().includes('status')) {
+  } else if (message && message.toLowerCase().includes('status')) {
     return 'Your request is being processed. Please hold on.';
+  } else if (media) {
+    return 'Thank you for sending the file! We will review it shortly.';
   } else {
     return "I'm sorry, I didn't understand that. Can you provide more details?";
   }
@@ -41,17 +45,17 @@ const decisionEngine = (message) => {
 
 // Handlers
 app.post('/webhook', (req, res) => {
-  const { sender, message } = req.body;
+  const { sender, message, media } = req.body;
 
-  if (!sender || !message) {
-    logger.error("Invalid payload: 'sender' and 'message' are required.");
-    return res.status(400).send("Invalid payload: 'sender' and 'message' are required.");
+  if (!sender || (!message && !media)) {
+    logger.error("Invalid payload: 'sender' and at least one of 'message' or 'media' are required.");
+    return res.status(400).send("Invalid payload: 'sender' and at least one of 'message' or 'media' are required.");
   }
 
-  logger.info(`Received message from ${sender}: ${message}`);
+  logger.info(`Received message from ${sender}: ${message || 'Media file received'}`);
 
-  const responseMessage = decisionEngine(message);
-  
+  const responseMessage = decisionEngine({ message, media });
+
   // Send Outgoing Message
   axios.post(WHATSAPP_API_URL, {
     to: sender,
