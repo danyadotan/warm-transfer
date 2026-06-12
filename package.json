@@ -1,0 +1,9 @@
+{
+  "name": "warm-transfer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Warm Transfer demo: an AI agent that stays silent until a support call needs a manager, then briefs the manager on a background call.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
