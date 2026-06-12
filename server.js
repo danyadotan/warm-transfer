@@ -81,12 +81,18 @@ const server = http.createServer(async (req, res) => {
     if (!body.brief) {
       return sendJson(res, 400, { error: "Missing 'brief' in request body" });
     }
+    const to = body.to || process.env.MANAGER_PHONE;
+    const out = { ok: true };
+    if (body.caseSummary) {
+      try {
+        out.whatsapp = await sendWhatsApp({ to, message: body.caseSummary });
+      } catch (err) {
+        out.whatsapp = { error: String(err.message || err) };
+      }
+    }
     try {
-      const result = await callDial({
-        to: body.to || process.env.MANAGER_PHONE,
-        prompt: body.brief,
-      });
-      return sendJson(res, 200, { ok: true, result });
+      out.result = await callDial({ to, prompt: body.brief });
+      return sendJson(res, 200, out);
     } catch (err) {
       return sendJson(res, 502, { ok: false, error: String(err.message || err) });
     }
