@@ -5,6 +5,14 @@
   "scenarios": [
     {
       "id": 1,
+      "customer": {
+        "name": "Yael Baron",
+        "company": "Private customer",
+        "photo": "https://i.pravatar.cc/96?img=47",
+        "lastOrder": "AquaPure Home Bar + UV kit · Mar 2026",
+        "phone": "+972-5•-•••-•318",
+        "address": "Rothschild ••, Tel A•••"
+      },
       "customerLine": "The display says 'Replace UV lamp' — what do I do?",
       "repResponse": "I'll order you a replacement lamp and send a 2-minute install guide. Done.",
       "agentAction": "silent",
@@ -12,6 +20,14 @@
     },
     {
       "id": 2,
+      "customer": {
+        "name": "Amit Shavit",
+        "company": "Private customer",
+        "photo": "https://i.pravatar.cc/96?img=12",
+        "lastOrder": "Filter 3-pack · Apr 2026",
+        "phone": "+972-5•-•••-•441",
+        "address": "Herzl ••, Haif•••"
+      },
       "customerLine": "Water tastes a bit off lately.",
       "repResponse": "Sounds like the filter cycle. I'm scheduling a filter swap and crediting this month.",
       "agentAction": "silent",
@@ -19,6 +35,14 @@
     },
     {
       "id": 3,
+      "customer": {
+        "name": "Tomer Azulay",
+        "company": "Private customer",
+        "photo": "https://i.pravatar.cc/96?img=59",
+        "lastOrder": "Monthly filter subscription · May 2026",
+        "phone": "+972-5•-•••-•176",
+        "address": "Ben Gurion ••, Rish•••"
+      },
       "customerLine": "I was overcharged last month, I want it fixed now.",
       "repResponse": "I see the double charge — refunding it now, you'll see it in 3 days.",
       "agentAction": "silent",
@@ -26,6 +50,14 @@
     },
     {
       "id": 4,
+      "customer": {
+        "name": "Michal Peretz",
+        "company": "Peretz & Co. Law Offices",
+        "photo": "https://i.pravatar.cc/96?img=32",
+        "lastOrder": "Office unit + service plan · Jun 2026",
+        "phone": "+972-3-•••-••90",
+        "address": "HaArba'a ••, Tel A•••"
+      },
       "customerLine": "Can I add a second unit for my office on the same account?",
       "repResponse": "Absolutely — adding it now to your business profile.",
       "agentAction": "silent",
@@ -33,6 +65,14 @@
     },
     {
       "id": 5,
+      "customer": {
+        "name": "Eyal Mizrahi",
+        "company": "Private customer · 4 yrs",
+        "photo": "https://i.pravatar.cc/96?img=68",
+        "lastOrder": "Monthly subscription · billing dispute May 2026",
+        "phone": "+972-5•-•••-•282",
+        "address": "Sokolov ••, Holo•••"
+      },
       "customerLine": "I don't want to talk to you. Put your manager on. Now.",
       "repResponse": "I understand — I'd really like to help you myself first...",
       "customerEscalation": "No. Manager. I'm not repeating myself again.",

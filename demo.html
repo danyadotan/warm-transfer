@@ -87,6 +87,29 @@
   }
   .brief-box.show { display: block; }
   .brief-box b { color: var(--text); }
+  .cust-card {
+    display: none; align-items: flex-start; gap: 14px;
+    background: var(--panel2); border-radius: 10px; padding: 14px;
+    margin-bottom: 16px;
+  }
+  .cust-card.show { display: flex; animation: pop .3s ease; }
+  .cust-card img, .cust-avatar {
+    width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+    flex-shrink: 0; background: #1f3a5f; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+  }
+  .cust-card .tag {
+    color: var(--accent); font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .cust-card .name { font-weight: 600; font-size: 16px; }
+  .cust-card .company { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .cust-fields { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .cust-fields .masked {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .5px;
+  }
   .call-status { margin-top: 12px; font-size: 14px; min-height: 20px; }
   .call-status.ok { color: var(--green); }
   .call-status.err { color: var(--red); }
@@ -104,6 +127,7 @@
 <div class="layout">
   <div class="panel">
     <h2>Live call transcript</h2>
+    <div class="cust-card" id="custCard"></div>
     <div class="transcript" id="transcript"></div>
     <div class="controls">
       <button class="btn btn-primary" id="autoBtn">▶ Play scenario</button>
@@ -149,6 +173,28 @@ async function init() {
   selectScenario(0);
 }
 
+function renderCustomer(c) {
+  const card = document.getElementById("custCard");
+  if (!c) {
+    card.classList.remove("show");
+    card.innerHTML = "";
+    return;
+  }
+  const initials = c.name.split(" ").map((w) => w[0]).join("");
+  card.innerHTML =
+    '<img src="' + c.photo + '" alt="" ' +
+    "onerror=\"this.outerHTML='<div class=cust-avatar>" + initials + "</div>'\">" +
+    '<div><span class="tag">📞 Incoming call · Customer</span>' +
+    '<div class="name">' + c.name + '</div>' +
+    '<div class="company">' + c.company + '</div>' +
+    '<div class="cust-fields">' +
+    "📦 " + c.lastOrder + "<br>" +
+    '📱 <span class="masked">' + c.phone + '</span> &nbsp; 🔒<br>' +
+    '📍 <span class="masked">' + c.address + '</span> &nbsp; 🔒' +
+    "</div></div>";
+  card.classList.add("show");
+}
+
 function buildSteps(s) {
   const out = [{ who: "customer", text: s.customerLine }, { who: "rep", text: s.repResponse }];
   if (s.customerEscalation) out.push({ who: "customer", text: s.customerEscalation });
@@ -160,6 +206,7 @@ function selectScenario(i) {
   steps = buildSteps(scenario);
   stepIndex = 0;
   customerLines = [];
+  renderCustomer(scenario.customer);
   document.querySelectorAll("#tabs button").forEach((b, j) => b.classList.toggle("active", j === i));
   document.getElementById("transcript").innerHTML = "";
   document.getElementById("agentIntent").textContent = "";
