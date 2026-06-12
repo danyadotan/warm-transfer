@@ -1,0 +1,3 @@
+# server.js is the local dev server only. Excluding it makes Vercel
+# use the standard model: static files at root + api/ serverless functions.
+server.js

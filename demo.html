@@ -135,6 +135,7 @@ async function init() {
   DATA = await (await fetch("scenarios.json")).json();
   document.getElementById("repName").textContent = DATA.rep;
   document.getElementById("mgrName").textContent = DATA.manager.split(" ")[0];
+  document.getElementById("briefBtn").textContent = "📞 Brief " + DATA.manager.split(" ")[0] + " now";
   const tabs = document.getElementById("tabs");
   DATA.scenarios.forEach((s, i) => {
     const b = document.createElement("button");
@@ -274,7 +275,7 @@ async function briefManager() {
       if (out.result && out.result.simulated) {
         status.textContent = "✓ Simulated (no API key configured) — brief + case file ready.";
       } else {
-        status.textContent = "✓ Danya's phone is ringing. Case file sent by SMS.";
+        status.textContent = "✓ " + DATA.manager.split(" ")[0] + "'s phone is ringing. Case file sent.";
         if (out.result && out.result.id) pollCallStatus(out.result.id, status);
       }
     } else {
@@ -298,7 +299,7 @@ async function pollCallStatus(id, status) {
         const secs = call.duration ? " (" + call.duration + "s)" : "";
         status.className = "call-status " + (call.status === "completed" ? "ok" : "err");
         status.textContent = call.status === "completed"
-          ? "✓ Briefing call completed" + secs + ". Danya has the full picture."
+          ? "✓ Briefing call completed" + secs + ". " + DATA.manager.split(" ")[0] + " has the full picture."
           : "✗ Briefing call " + call.status + ". Try again or call manually.";
         return;
       }
