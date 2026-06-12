@@ -66,6 +66,7 @@
   }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
   .dot.triggered { background: var(--red); animation: pulse 1s infinite; }
+  .dot.notify { background: var(--amber); animation: pulse 1.4s infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
   .agent-state .label { font-weight: 600; }
   .agent-state .sub { font-size: 13px; color: var(--muted); }
@@ -121,6 +122,7 @@
     </div>
     <div class="intent" id="agentIntent"></div>
     <div class="screen-note" id="screenNote"></div>
+    <div class="brief-box" id="waBox"></div>
     <div class="brief-box" id="briefBox"></div>
   </div>
 </div>
@@ -158,6 +160,7 @@ function selectScenario(i) {
   document.getElementById("transcript").innerHTML = "";
   document.getElementById("agentIntent").textContent = "";
   document.getElementById("screenNote").classList.remove("show");
+  document.getElementById("waBox").classList.remove("show");
   document.getElementById("briefBox").classList.remove("show");
   document.getElementById("briefBtn").style.display = "none";
   document.getElementById("nextBtn").disabled = false;
@@ -169,7 +172,9 @@ function selectScenario(i) {
 function setAgent(state, sub) {
   const dot = document.getElementById("agentDot");
   dot.classList.toggle("triggered", state === "trigger");
-  document.getElementById("agentLabel").textContent = state === "trigger" ? "TRIGGERED" : "Silent";
+  dot.classList.toggle("notify", state === "notify");
+  const labels = { trigger: "TRIGGERED", notify: "WHISPER SENT", silent: "Silent" };
+  document.getElementById("agentLabel").textContent = labels[state] || "Silent";
   document.getElementById("agentSub").textContent = sub;
 }
 
@@ -188,21 +193,39 @@ async function nextLine() {
 
   // Ask the server-side decision engine after every customer line.
   let decision = { action: "silent" };
-  try {
-    decision = await (await fetch("/api/decide", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customerLines }),
-    })).json();
-  } catch (e) { /* offline fallback: stay silent */ }
+  if (step.who === "customer") {
+    try {
+      decision = await (await fetch("/api/decide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerLines }),
+      })).json();
+    } catch (e) { /* offline fallback: stay silent */ }
+  }
 
   if (decision.action === "trigger" && scenario.agentAction === "trigger") {
     triggerEscalation();
+  } else if (decision.action === "notify" && scenario.whatsappNote) {
+    notifyRep(decision);
   } else if (stepIndex >= steps.length) {
     document.getElementById("nextBtn").disabled = true;
     setAgent("silent", "Call resolved by " + DATA.rep + ".");
     document.getElementById("agentIntent").textContent = "Why silent: " + scenario.intent;
   }
+}
+
+async function notifyRep(decision) {
+  setAgent("notify", decision.reason);
+  const box = document.getElementById("waBox");
+  box.innerHTML = "<b>📱 WhatsApp to " + DATA.rep + " (sent now):</b><br>" + scenario.whatsappNote;
+  box.classList.add("show");
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: scenario.whatsappNote }),
+    });
+  } catch (e) { /* demo continues even if the send fails */ }
 }
 
 function triggerEscalation() {

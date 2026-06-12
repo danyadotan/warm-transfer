@@ -6,6 +6,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { decide, callDial } = require("./lib/engine");
+const { sendWhatsApp } = require("./lib/whatsapp");
 
 // Minimal .env loader (no dependencies).
 const envPath = path.join(__dirname, ".env");
@@ -59,6 +60,21 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && req.url === "/api/decide") {
     const body = await readBody(req);
     return sendJson(res, 200, decide(body.customerLines || []));
+  }
+  if (req.method === "POST" && req.url === "/api/notify") {
+    const body = await readBody(req);
+    if (!body.message) {
+      return sendJson(res, 400, { error: "Missing 'message' in request body" });
+    }
+    try {
+      const result = await sendWhatsApp({
+        to: body.to || process.env.REP_PHONE,
+        message: body.message,
+      });
+      return sendJson(res, 200, { ok: true, result });
+    } catch (err) {
+      return sendJson(res, 502, { ok: false, error: String(err.message || err) });
+    }
   }
   if (req.method === "POST" && req.url === "/api/transfer") {
     const body = await readBody(req);
