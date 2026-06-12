@@ -58,6 +58,7 @@
     cursor: pointer; font-weight: 600;
   }
   .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost { background: var(--panel2); color: var(--text); }
   .btn-danger { background: var(--red); color: #fff; }
   .btn:disabled { opacity: .4; cursor: default; }
   .agent-state {
@@ -105,7 +106,8 @@
     <h2>Live call transcript</h2>
     <div class="transcript" id="transcript"></div>
     <div class="controls">
-      <button class="btn btn-primary" id="nextBtn">▶ Next line</button>
+      <button class="btn btn-primary" id="autoBtn">▶ Play scenario</button>
+      <button class="btn btn-ghost" id="nextBtn">⏭ Next line</button>
       <button class="btn btn-danger" id="briefBtn" style="display:none">📞 Brief Dana now</button>
     </div>
     <div class="call-status" id="callStatus"></div>
@@ -129,7 +131,7 @@
 </div>
 
 <script>
-let DATA, scenario, steps, stepIndex, customerLines;
+let DATA, scenario, steps, stepIndex, customerLines, autoRunning = false;
 
 async function init() {
   DATA = await (await fetch("scenarios.json")).json();
@@ -167,6 +169,8 @@ function selectScenario(i) {
   document.getElementById("mgrWaBox").classList.remove("show");
   document.getElementById("briefBtn").style.display = "none";
   document.getElementById("nextBtn").disabled = false;
+  autoRunning = false;
+  updateAutoBtn();
   document.getElementById("callStatus").textContent = "";
   document.getElementById("callStatus").className = "call-status";
   setAgent("silent", "Listening. Rep is in control.");
@@ -309,7 +313,33 @@ async function pollCallStatus(id, status) {
   }
 }
 
-document.getElementById("nextBtn").onclick = nextLine;
+function updateAutoBtn() {
+  const btn = document.getElementById("autoBtn");
+  const done = stepIndex >= steps.length || document.getElementById("nextBtn").disabled;
+  btn.textContent = autoRunning ? "⏸ Pause" : "▶ Play scenario";
+  btn.disabled = done && !autoRunning;
+}
+
+async function playScenario() {
+  if (autoRunning) {
+    autoRunning = false;
+    updateAutoBtn();
+    return;
+  }
+  autoRunning = true;
+  updateAutoBtn();
+  while (autoRunning && stepIndex < steps.length && !document.getElementById("nextBtn").disabled) {
+    await nextLine();
+    updateAutoBtn();
+    if (stepIndex >= steps.length || document.getElementById("nextBtn").disabled) break;
+    await new Promise((r) => setTimeout(r, 2600));
+  }
+  autoRunning = false;
+  updateAutoBtn();
+}
+
+document.getElementById("autoBtn").onclick = playScenario;
+document.getElementById("nextBtn").onclick = () => { nextLine().then(updateAutoBtn); };
 document.getElementById("briefBtn").onclick = briefManager;
 init();
 </script>
