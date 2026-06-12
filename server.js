@@ -100,6 +100,23 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 502, { ok: false, error: String(err.message || err) });
     }
   }
+  if (req.method === "POST" && req.url === "/api/webhook") {
+    const body = await readBody(req);
+    const data = body.data || {};
+    if (body.type === "message.received" && data.body && data.from) {
+      try {
+        const result = await sendMessage({
+          to: data.from,
+          message: data.body,
+          channel: data.channel,
+        });
+        return sendJson(res, 200, { ok: true, echoed: data.body, result });
+      } catch (err) {
+        return sendJson(res, 200, { ok: false, error: String(err.message || err) });
+      }
+    }
+    return sendJson(res, 200, { ok: true, ignored: body.type || "unknown" });
+  }
   if (req.method === "GET" && req.url.startsWith("/api/call-status")) {
     const id = new URL(req.url, "http://localhost").searchParams.get("id");
     if (!id) {
