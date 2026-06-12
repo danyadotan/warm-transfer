@@ -1,7 +1,7 @@
 {
   "product": "AquaPure Home Water Bar",
   "rep": "Noa",
-  "manager": "Dana (shift manager)",
+  "manager": "Danya (shift manager)",
   "scenarios": [
     {
       "id": 1,
@@ -38,9 +38,10 @@
       "customerEscalation": "No. Manager. I'm not repeating myself again.",
       "agentAction": "trigger",
       "trigger": "Two consecutive manager demands + rep refusal loop detected.",
-      "whatsappNote": "Noa — you're doing fine. Don't argue the point, just acknowledge and slow down. If he asks for a manager again, I'll bring Dana in. You don't need to handle this alone.",
-      "screenNote": "Customer demanding manager. You're not stuck — I've got you. Don't decide. Read this if needed: 'I hear you. I'm bringing in my manager Dana, who already has the full picture.'",
-      "managerBrief": "Hi Dana, Warm Transfer here. Noa has a customer on the line who's asked for a manager twice — billing dispute from last month, already partially handled, customer is frustrated and doesn't want to repeat himself. You have the full context. Ready to take over warmly whenever you are.",
+      "whatsappNote": "Noa — you're doing fine. Don't argue the point, just acknowledge and slow down. If he asks for a manager again, I'll bring Danya in. You don't need to handle this alone.",
+      "screenNote": "Customer demanding manager. You're not stuck — I've got you. Don't decide. Read this if needed: 'I hear you. I'm bringing in my manager Danya, who already has the full picture.'",
+      "managerBrief": "Hi Danya, Warm Transfer here. Noa has a customer on the line who's asked for a manager twice — billing dispute from last month, already partially handled, customer is frustrated and doesn't want to repeat himself. You have the full context. Ready to take over warmly whenever you are.",
+      "managerWhatsapp": "📋 Case file — live call with Noa: Billing dispute from last month (double charge, refund already issued, lands in 3 days). Customer demanded a manager twice, refuses to repeat himself. Recommended opening: acknowledge the wait, confirm the refund timeline, offer a goodwill credit. If the call is transferred to you, continue from this point — no need to ask him anything again.",
       "intent": "Two refusals = real escalation. Rep is at the freeze point. Act now: brief the manager, hand Noa the words, bridge only if the wall holds."
     }
   ]
